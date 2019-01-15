@@ -19,13 +19,15 @@
     "url": "https://github.com/DeadAlready/easy-rbac/issues"
   },
   "homepage": "https://github.com/DeadAlready/easy-rbac#readme",
-  "dependencies": {
-    "debug": "^2.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "mocha": "^2.3.3"
+    "mocha": "*"
   },
-  "engines" : {
-    "node" : ">=8.0"
+  "engines": {
+    "node": ">=8.0"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
   }
 }

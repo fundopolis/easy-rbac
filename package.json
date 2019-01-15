@@ -1,6 +1,6 @@
 {
   "name": "easy-rbac",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "RBAC implementation for Node.js",
   "main": "lib/rbac.js",
   "scripts": {
@@ -11,7 +11,7 @@
     "url": "git+https://github.com/DeadAlready/easy-rbac.git"
   },
   "keywords": [
-    "rbac"
+    "rbac", "abac"
   ],
   "author": "Karl Düüna",
   "license": "MIT",
@@ -21,7 +21,9 @@
   "homepage": "https://github.com/DeadAlready/easy-rbac#readme",
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*"
+    "mocha": "*",
+    "sinon": "^7.2.2",
+    "sinon-express-mock": "^2.1.0"
   },
   "engines": {
     "node": ">=8.0"

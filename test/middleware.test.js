@@ -1,6 +1,7 @@
 'use strict';
 
-const sinon = require('../node_modules/sinon-express-mock/lib/');
+const mock = require('sinon-express-mock');
+const sinon = require('sinon');
 const RBAC = require('../lib/rbac');
 let data = require('./data');
 
@@ -33,13 +34,74 @@ describe('RBAC middleware', function() {
 
   it('should put rbac into request', () => {
     const rbac = RBAC.main(data.all);
-    let request = {
-      body : "Foo"
-    };
-    let req = sinon.mockReq(request), res = sinon.mockRes(), next = function(){};
+    let req = mock.mockReq(), res = mock.mockRes(), next = function(){};
     rbac(req, res, next);
     assert.notEqual(req.rbac, undefined);
   });
+
+  describe('enforce can parameter constraints', function() {
+    it('should should reject undefined operation', () => {
+      assert.throws(
+        () => {
+          RBAC.can();
+        },
+        TypeError
+      );
+    });
+    it('should accept operation string', () => {
+      assert.doesNotThrow(
+        () => {
+          RBAC.can('role', 'operation');
+        }
+      );
+    });
+  });
+
+  it('should allow static role', done => {
+    const rbac = RBAC.main(data.all);
+    let req = mock.mockReq(), 
+      res = mock.mockRes(), 
+      next = function(){};
+    rbac(req, res, next);
+    const can = RBAC.can('user', 'account:add');
+    can(req, res, done);
+  });
+
+  it('should allow role returned by function', done => {
+    const rbac = RBAC.main(data.all);
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const next = function(){};
+    rbac(req, res, next);
+    const can = RBAC.can(function(){return 'user'}, 'account:add');
+    can(req, res, done);
+  });
+
+  it('should allow role returned by function with request', done => {
+    const rbac = RBAC.main(data.all);
+    let request = {
+      role: 'user'
+    };
+    let req = mock.mockReq(request),
+      res = mock.mockRes();
+    const next = function(){};
+    rbac(req, res, next);
+    const can = RBAC.can(function(req,res){return req.role}, 'account:add');
+    can(req, res, done);
+  });
+
+  it('should return 403 on unallowed operation', () => {
+    const rbac = RBAC.main(data.all);
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const next = function(){};
+    rbac(req, res, next);
+    const can = RBAC.can('user', 'foo_op');
+    can(req, res, next);
+    assert(res.sendStatus.called);
+    assert(res.sendStatus.calledWith(403));
+  });
+  
 
   // it('should reject if function throws', function (done) {
   //   (RBAC.main(async () => {

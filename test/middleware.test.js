@@ -68,7 +68,7 @@ describe('RBAC middleware', function() {
     mw(req, res, next);
   });
 
-  if('should call role function with request and response objects', done => {
+  it('should call role function with request and response objects', done => {
     const role = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();
@@ -79,7 +79,7 @@ describe('RBAC middleware', function() {
     });
   });
 
-  if('should call operation function with request and response objects', done => {
+  it('should call operation function with request and response objects', done => {
     const operation = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();
@@ -90,7 +90,7 @@ describe('RBAC middleware', function() {
     });
   });
 
-  if('should call params function with request and response objects', done => {
+  it('should call params function with request and response objects', done => {
     const params = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();

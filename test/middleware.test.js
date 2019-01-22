@@ -27,30 +27,15 @@ describe('RBAC middleware', function() {
     );
   });
 
+  // it('should pass on error if error thrown in roles construction', done => {
+  //   const roleConfig = function(){ throw new Error('foo')};
+  //   const mw = rbacMw(null, null, null, roleConfig);
+  // });
+
   it('should return middleware function', () => {
     const mw = rbacMw(null, null, null, data.all);
     assert.equal(typeof mw, 'function');
   });
-
-  
-
-  // describe('enforce can parameter constraints', function() {
-  //   it('should should reject undefined operation', () => {
-  //     assert.throws(
-  //       () => {
-  //         RBAC.can();
-  //       },
-  //       TypeError
-  //     );
-  //   });
-  //   it('should accept operation string', () => {
-  //     assert.doesNotThrow(
-  //       () => {
-  //         RBAC.can('role', 'operation');
-  //       }
-  //     );
-  //   });
-  // });
 
   it('should allow static role', done => {
     const mw = rbacMw('user', 'account:add', null, data.all);
@@ -63,7 +48,7 @@ describe('RBAC middleware', function() {
     mw(req, res, next);
   });
 
-  it('should reject static role', done => {
+  it('should reject unknown static role', done => {
     const mw = rbacMw('foo', 'account:add', null, data.all);
     let req = mock.mockReq(), 
       res = mock.mockRes(), 
@@ -87,29 +72,51 @@ describe('RBAC middleware', function() {
     mw(req, res, next);
   });
 
-  // it('should allow role returned by function with request', done => {
-  //   const rbac = RBAC.main(data.all);
-  //   let request = {
-  //     role: 'user'
-  //   };
-  //   let req = mock.mockReq(request),
-  //     res = mock.mockRes();
-  //   const next = function(){};
-  //   rbac(req, res, next);
-  //   const can = RBAC.can(function(req,res){return req.role}, 'account:add');
-  //   can(req, res, done);
-  // });
+  if('should call role function with request and response objects', done => {
+    const role = sinon.stub();
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw(role, 'account:add', null, data.all);
+    mw(req, res, () => {
+      assert.strictEqual(role.calledWith(req, res), true);
+      done();
+    });
+  });
 
-  // it('should return 403 on unallowed operation', () => {
-  //   const rbac = RBAC.main(data.all);
-  //   let req = mock.mockReq(),
-  //     res = mock.mockRes();
-  //   const next = function(){};
-  //   rbac(req, res, next);
-  //   const can = RBAC.can('user', 'foo_op');
-  //   can(req, res, next);
-  //   assert(res.sendStatus.calledWith(403));
-  // });  
+  if('should call operation function with request and response objects', done => {
+    const operation = sinon.stub();
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw('role', operation, null, data.all);
+    mw(req, res, () => {
+      assert.strictEqual(operation.calledWith(req, res), true);
+      done();
+    });
+  });
+
+  if('should call params function with request and response objects', done => {
+    const params = sinon.stub();
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw('role', 'operation', params, data.all);
+    mw(req, res, () => {
+      assert.strictEqual(params.calledWith(req, res), true);
+      done();
+    });
+  });
+
+  it('should reject unknown role returned by function', done => {
+    const role = function role() { return 'foo' };
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const next = function(err){
+      assert.strictEqual(err instanceof Error, true);
+      assert.strictEqual(err.message, 'forbidden');
+      done();
+    };
+    const mw = rbacMw(role, 'account:add', null, data.all);
+    mw(req, res, next);
+  });
 
   
 });

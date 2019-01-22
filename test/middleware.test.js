@@ -30,7 +30,7 @@ describe('RBAC middleware', function() {
 
   it('should pass on error if thrown in roles construction', done => {
     const roleConfig = function(){ throw new Error('foo')};
-    const mw = rbacMw(null, null, null, roleConfig);
+    const mw = rbacMw(roleConfig);
     let req = mock.mockReq(), 
       res = mock.mockRes(), 
       next = function(err){
@@ -42,12 +42,12 @@ describe('RBAC middleware', function() {
   });
 
   it('should return middleware function', () => {
-    const mw = rbacMw(null, null, null, data.all);
+    const mw = rbacMw(data.all);
     assert.equal(typeof mw, 'function');
   });
 
   it('should allow static role', done => {
-    const mw = rbacMw('user', 'account:add', null, data.all);
+    const mw = rbacMw(data.all, 'user', 'account:add', null);
     let req = mock.mockReq(), 
       res = mock.mockRes(), 
       next = function(err){
@@ -58,7 +58,7 @@ describe('RBAC middleware', function() {
   });
 
   it('should reject unknown static role', done => {
-    const mw = rbacMw('foo', 'account:add', null, data.all);
+    const mw = rbacMw(data.all, 'foo', 'account:add', null);
     let req = mock.mockReq(), 
       res = mock.mockRes(), 
       next = function(err){
@@ -73,7 +73,7 @@ describe('RBAC middleware', function() {
     const role = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw(role, 'account:add', null, data.all);
+    const mw = rbacMw(data.all, role, 'account:add', null);
     mw(req, res, () => {
       assert.strictEqual(role.calledWith(req, res), true);
       done();
@@ -84,7 +84,7 @@ describe('RBAC middleware', function() {
     const operation = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw('role', operation, null, data.all);
+    const mw = rbacMw(data.all, 'role', operation, null);
     mw(req, res, () => {
       assert.strictEqual(operation.calledWith(req, res), true);
       done();
@@ -95,7 +95,7 @@ describe('RBAC middleware', function() {
     const params = sinon.stub();
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw('role', 'operation', params, data.all);
+    const mw = rbacMw(data.all, 'role', 'operation', params);
     mw(req, res, () => {
       assert.strictEqual(params.calledWith(req, res), true);
       done();
@@ -107,7 +107,7 @@ describe('RBAC middleware', function() {
     const canStub = sinon.stub(rbac.prototype, 'can');
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw(role, 'operation', null, data.all);
+    const mw = rbacMw(data.all, role, 'operation', null);
     mw(req, res, (err) => {
       assert.strictEqual(canStub.calledWith('user', 'operation'), true);
       rbac.prototype.can.restore();
@@ -120,7 +120,7 @@ describe('RBAC middleware', function() {
     const canStub = sinon.stub(rbac.prototype, 'can');
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw('role', operation, null, data.all);
+    const mw = rbacMw(data.all, 'role', operation, null);
     mw(req, res, (err) => {
       assert.strictEqual(canStub.calledWith('role', 'fakeOp'), true);
       rbac.prototype.can.restore();
@@ -133,7 +133,7 @@ describe('RBAC middleware', function() {
     const canStub = sinon.stub(rbac.prototype, 'can');
     let req = mock.mockReq(),
       res = mock.mockRes();
-    const mw = rbacMw('role', 'operation', params, data.all);
+    const mw = rbacMw(data.all, 'role', 'operation', params);
     mw(req, res, (err) => {
       assert.strictEqual(canStub.calledWith('role', 'operation', 'params'), true);
       rbac.prototype.can.restore();
@@ -149,7 +149,7 @@ describe('RBAC middleware', function() {
       assert.equal(err, undefined);
       done();
     };
-    const mw = rbacMw(role, 'account:add', null, data.all);
+    const mw = rbacMw(data.all, role, 'account:add', null);
     mw(req, res, next);
   });
 
@@ -162,7 +162,7 @@ describe('RBAC middleware', function() {
       assert.strictEqual(err.message, 'forbidden');
       done();
     };
-    const mw = rbacMw(role, 'account:add', null, data.all);
+    const mw = rbacMw(data.all, role, 'account:add', null);
     mw(req, res, next);
   });
 

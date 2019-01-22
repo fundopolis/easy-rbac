@@ -27,10 +27,10 @@ describe('RBAC middleware', function() {
     );
   });
 
-  // it('should pass on error if error thrown in roles construction', done => {
-  //   const roleConfig = function(){ throw new Error('foo')};
-  //   const mw = rbacMw(null, null, null, roleConfig);
-  // });
+  it('should pass on error if error thrown in roles construction', done => {
+    const roleConfig = function(){ throw new Error('foo')};
+    const mw = rbacMw(null, null, null, roleConfig);
+  });
 
   it('should return middleware function', () => {
     const mw = rbacMw(null, null, null, data.all);

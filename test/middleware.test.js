@@ -3,6 +3,7 @@
 const mock = require('sinon-express-mock');
 const sinon = require('sinon');
 const rbacMw = require('../lib/middleware');
+const rbac = require('../lib/rbac');
 let data = require('./data');
 
 const assert = require('assert');
@@ -97,6 +98,45 @@ describe('RBAC middleware', function() {
     const mw = rbacMw('role', 'operation', params, data.all);
     mw(req, res, () => {
       assert.strictEqual(params.calledWith(req, res), true);
+      done();
+    });
+  });
+
+  it('should resolve promise for role', done => {
+    const role = Promise.resolve('user');
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw(role, 'operation', null, data.all);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.calledWith('user', 'operation'), true);
+      rbac.prototype.can.restore();
+      done();
+    });
+  });
+
+  it('should resolve promise for operation', done => {
+    const operation = Promise.resolve('fakeOp');
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw('role', operation, null, data.all);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.calledWith('role', 'fakeOp'), true);
+      rbac.prototype.can.restore();
+      done();
+    });
+  });
+
+  it('should resolve promise for params', done => {
+    const params = Promise.resolve('params');
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw('role', 'operation', params, data.all);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.calledWith('role', 'operation', 'params'), true);
+      rbac.prototype.can.restore();
       done();
     });
   });

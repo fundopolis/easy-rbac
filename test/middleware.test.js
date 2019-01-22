@@ -27,9 +27,17 @@ describe('RBAC middleware', function() {
     );
   });
 
-  it('should pass on error if error thrown in roles construction', done => {
+  it('should pass on error if thrown in roles construction', done => {
     const roleConfig = function(){ throw new Error('foo')};
     const mw = rbacMw(null, null, null, roleConfig);
+    let req = mock.mockReq(), 
+      res = mock.mockRes(), 
+      next = function(err){
+        assert.strictEqual(err instanceof Error, true);
+        assert.strictEqual(err.message, 'foo');
+        done();
+      };
+    mw(req, res, next);
   });
 
   it('should return middleware function', () => {
@@ -57,18 +65,6 @@ describe('RBAC middleware', function() {
         assert.strictEqual(err.message, 'forbidden');
         done();
       };
-    mw(req, res, next);
-  });
-
-  it('should allow role returned by function', done => {
-    const role = function role() { return 'user' };
-    let req = mock.mockReq(),
-      res = mock.mockRes();
-    const next = function(err){
-      assert.equal(err, undefined);
-      done();
-    };
-    const mw = rbacMw(role, 'account:add', null, data.all);
     mw(req, res, next);
   });
 
@@ -103,6 +99,18 @@ describe('RBAC middleware', function() {
       assert.strictEqual(params.calledWith(req, res), true);
       done();
     });
+  });
+
+  it('should allow role returned by function', done => {
+    const role = function role() { return 'user' };
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const next = function(err){
+      assert.equal(err, undefined);
+      done();
+    };
+    const mw = rbacMw(role, 'account:add', null, data.all);
+    mw(req, res, next);
   });
 
   it('should reject unknown role returned by function', done => {

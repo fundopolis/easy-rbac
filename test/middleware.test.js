@@ -166,5 +166,50 @@ describe('RBAC middleware', function() {
     mw(req, res, next);
   });
 
+  it('should call error handler for rejected roles promise', done => {
+    const role = Promise.reject(new Error('role promise error'));
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw(data.all, role, 'operation', null);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.notCalled, true);
+      assert.strictEqual(err instanceof Error, true);
+      assert.strictEqual(err.message, 'role promise error');
+      rbac.prototype.can.restore();
+      done();
+    });
+  });
+
+  it('should call error handler for rejected operation promise', done => {
+    const operation = Promise.reject(new Error('op promise error'));
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw(data.all, 'role', operation, null);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.notCalled, true);
+      assert.strictEqual(err instanceof Error, true);
+      assert.strictEqual(err.message, 'op promise error');
+      rbac.prototype.can.restore();
+      done();
+    });
+  });
+
+  it('should call error handler for rejected params promise', done => {
+    const params = Promise.reject(new Error('params promise error'));
+    const canStub = sinon.stub(rbac.prototype, 'can');
+    let req = mock.mockReq(),
+      res = mock.mockRes();
+    const mw = rbacMw(data.all, 'role', 'operation', params);
+    mw(req, res, (err) => {
+      assert.strictEqual(canStub.notCalled, true);
+      assert.strictEqual(err instanceof Error, true);
+      assert.strictEqual(err.message, 'params promise error');
+      rbac.prototype.can.restore();
+      done();
+    });
+  });
+
   
 });

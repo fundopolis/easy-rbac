@@ -93,24 +93,6 @@ Specific operations are always prioritized over wildcard operations. This means 
     
 Then `user:create` will not run the provided when operation, whereas everything else starting with `user:` does
 
-## Middleware
-
-provide middleware definition on initialization and use rbac.can in route middleware checks
-
-    const rbac = require('easy-rbac');
-    app.use(rbac.main(rbac_definition));
-
-statically defined role value
-
-    router.post('/add', rbac.can('user', 'post:add'), function(req, res) { }
-
-or as a role value returned by a function
-
-    function getRole(req, res) {
-      return 'user';
-    }
-    router.post('/add', rbac.can(async (req: Request, res: Response) => getRole(req, res), 'post:add'), function(req, res) { }
-
 ## Usage can(role, operation, params?)
 
 After initialization you can use the `can` function of the object to check if role should have access to an operation.
@@ -177,7 +159,35 @@ any checks.
       .catch(err => {
         // something else went wrong - refer to err object
       });
-      
+
+## Middleware
+
+Support for Express generates a middleware function that is configured on initialization and implicitly calls the `can` function on route middleware calls, with passing and blocking handled through the normal `next()` and `next(error)` flow.
+
+Initialization errors will pass the original error on to the middleware error handling flow. Denied permission checks fail on Error('forbidden').
+
+Usage: 
+
+Provide role definitions on initialization and optional callbacks for role and operation on route middleware calls. 
+
+    const rbacMiddleware = require('easy-rbac/middleware');
+    const getRole = (req, res) => { ... };
+    const getOperation = (req, res) => { ... };
+    app.use(rbacMiddleware(rbac_definition, getRole, getOperation));
+
+All parameters may also be statically defined, e.g.
+
+    app.use(rbacMiddleware(role_definitiions, 'user', 'post:add'));
+
+or by Promises
+
+    async function getRole(){
+      ...
+    };
+    app.use(rbacMiddleware(role_definitions, getRole(), ...));
+
+
+
 ## License
 
 The MIT License (MIT)

@@ -11,7 +11,8 @@
     "url": "git+https://github.com/DeadAlready/easy-rbac.git"
   },
   "keywords": [
-    "rbac", "abac"
+    "rbac",
+    "abac"
   ],
   "author": "Karl Düüna",
   "license": "MIT",
@@ -21,7 +22,7 @@
   "homepage": "https://github.com/DeadAlready/easy-rbac#readme",
   "dependencies": {},
   "devDependencies": {
-    "mocha": "*",
+    "mocha": "^5.2.0",
     "sinon": "^7.2.2",
     "sinon-express-mock": "^2.1.0"
   },

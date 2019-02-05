@@ -33,19 +33,32 @@ describe('RBAC middleware', function() {
     );
   });
 
-  // of course it will not throw bc the init is async, but 
-  // need to figure if/how the error is handled
-  it('should throw error if roles function throws', () => {
+  it('should reject if roles function throws', done => {
     const rolesFunc = function(){
       throw new RbacError('roles function error');
     }
     const mw = rbacMw(rolesFunc, 'role', 'operation');
-    assert.throws(
-      () => {
-        rbacMw(rolesFunc);
-      },
-      RbacError
-    );
+    let req = mock.mockReq(), 
+      res = mock.mockRes(); 
+    const next = function(err) {
+      assert.strictEqual(err instanceof RbacError, true);
+      assert.strictEqual(err.message, 'roles function error');
+      done();
+    };
+    mw(req, res, next);
+  });
+
+  it('should reject if roles function rejects promise', done => {
+    const rolesFunc = Promise.reject(new RbacError('roles promise error'));
+    const mw = rbacMw(rolesFunc, 'role', 'operation');
+    const req = mock.mockReq(),
+      res = mock.mockRes(),
+      next = function(err) {
+        assert.strictEqual(err instanceof RbacError, true);
+        assert.strictEqual(err.message, 'roles promise error');
+        done();
+      };
+    mw(req, res, next);
   });
 
   it('should pass on error if thrown in roles construction', done => {
